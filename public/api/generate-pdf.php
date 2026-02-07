@@ -5,17 +5,24 @@ use Dompdf\Dompdf;
 use Dompdf\Options;
 use Spatie\Browsershot\Browsershot;
 
-$data = json_decode(file_get_contents('../storage/answers.json'), true) ?? [];
+// ✅ No cache for API response
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Pragma: no-cache");
 
-function v(array $data, string $key, string $fallback = '—'): string
-{
+function json_out(array $payload, int $code = 200): void {
+    http_response_code($code);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+function v(array $data, string $key, string $fallback = '—'): string {
     $val = $data[$key] ?? '';
     $val = is_string($val) ? trim($val) : '';
     return $val !== '' ? htmlspecialchars($val, ENT_QUOTES, 'UTF-8') : $fallback;
 }
 
-function img_to_data_uri(string $absPath): string
-{
+function img_to_data_uri(string $absPath): string {
     if (!is_file($absPath)) return '';
     $ext = strtolower(pathinfo($absPath, PATHINFO_EXTENSION));
     $mime = match ($ext) {
@@ -25,6 +32,16 @@ function img_to_data_uri(string $absPath): string
         default => 'application/octet-stream',
     };
     return 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($absPath));
+}
+
+/**
+ * ✅ Load answers.json safely (absolute path)
+ */
+$dataFile = realpath(__DIR__ . '/../storage/answers.json');
+$data = $dataFile ? (json_decode(file_get_contents($dataFile), true) ?? []) : [];
+
+if (!$dataFile) {
+    json_out(['success' => false, 'message' => 'answers.json introuvable'], 500);
 }
 
 /**
@@ -56,15 +73,13 @@ $goal2026 = v($data, 'goal2026', '—');
 /**
  * Images (base64)
  */
-$baseDir = realpath(__DIR__ . '/../assets');
-
 $hibaMainFile = realpath(__DIR__ . '/../assets/hiba_pictures/hiba.jpg');
 $valFile      = realpath(__DIR__ . '/../assets/valentine-bg.jpg');
 $hrtFile      = realpath(__DIR__ . '/../assets/hearth.jpg');
 
-if (!$hibaMainFile) die("Missing main image: " . __DIR__ . '/../assets/hiba_pictures/hiba.jpg');
-if (!$valFile)      die("Missing image: " . __DIR__ . '/../assets/valentine-bg.jpg');
-if (!$hrtFile)      die("Missing image: " . __DIR__ . '/../assets/hearth.jpg');
+if (!$hibaMainFile) json_out(['success' => false, 'message' => 'Missing main image hiba.jpg'], 500);
+if (!$valFile)      json_out(['success' => false, 'message' => 'Missing valentine-bg.jpg'], 500);
+if (!$hrtFile)      json_out(['success' => false, 'message' => 'Missing hearth.jpg'], 500);
 
 $hibaMainSrc = img_to_data_uri($hibaMainFile);
 $valSrc      = img_to_data_uri($valFile);
@@ -76,16 +91,11 @@ $hrtSrc      = img_to_data_uri($hrtFile);
 $thumbsHtml = '';
 for ($i = 1; $i <= 6; $i++) {
     $thumbPath = realpath(__DIR__ . "/../assets/hiba_pictures/{$i}.jpeg");
-    if (!$thumbPath) {
-        // if some are missing, just skip
-        continue;
-    }
+    if (!$thumbPath) continue;
     $thumbSrc = img_to_data_uri($thumbPath);
     $thumbsHtml .= "<div class='thumb'><img src='{$thumbSrc}' alt='thumb {$i}'></div>";
 }
-
 if ($thumbsHtml === '') {
-    // fallback text if none found
     $thumbsHtml = "<div class='thumbEmpty'>No extra photos found</div>";
 }
 
@@ -94,7 +104,7 @@ if ($thumbsHtml === '') {
  */
 $html = "
 <!doctype html>
-<html lang='en'>
+<html lang='fr'>
 <head>
   <meta charset='utf-8' />
   <title>Love Profile</title>
@@ -132,18 +142,12 @@ $html = "
       border: 1px solid rgba(0,0,0,0.06);
     }
 
-    /* ============================
-       ✅ LEFT SIDE: One collage card
-       Main photo (65%) + Thumbs (35%)
-    ============================ */
-
     .leftCard{
       display: grid;
       grid-template-rows: 0.65fr 0.35fr;
       height: 100%;
     }
 
-    /* Main photo */
     .mainPhoto{
       background: #eee;
     }
@@ -156,7 +160,6 @@ $html = "
       border-radius: 16px;
     }
 
-    /* Thumbnails area (2 columns × 3 rows) */
     .thumbs{
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -166,7 +169,6 @@ $html = "
       background: rgba(255,255,255,0.20);
     }
 
-    /* Bigger thumbnails (+30%) */
     .thumb{
       border-radius: 16px;
       overflow: hidden;
@@ -181,10 +183,6 @@ $html = "
       object-fit: cover;
       display: block;
     }
-
-    /* ============================
-       ✅ RIGHT SIDE
-    ============================ */
 
     .right{
       display:grid;
@@ -249,26 +247,25 @@ $html = "
       object-fit:cover;
       display:block;
     }
-      .goalText{
-  margin-top: 12px;
-  padding: 12px;
-  text-align: center;
-  font-size: 12px;
-  font-weight: 700;
-  color: #b51d4a;
 
-  border-radius: 14px;
-  background: rgba(255,255,255,0.75);
-  border: 1px solid rgba(0,0,0,0.06);
-}
+    .goalText{
+      margin-top: 12px;
+      padding: 12px;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: #b51d4a;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.75);
+      border: 1px solid rgba(0,0,0,0.06);
+    }
 
-.goalText span{
-  display: block;
-  margin-top: 6px;
-  font-weight: 400;
-  color: #333;
-}
-
+    .goalText span{
+      display: block;
+      margin-top: 6px;
+      font-weight: 400;
+      color: #333;
+    }
   </style>
 </head>
 
@@ -276,25 +273,16 @@ $html = "
   <div class='page'>
     <div class='grid'>
 
-      <!-- ✅ LEFT: One card collage -->
       <div class='card leftCard'>
-
-        <!-- Main photo -->
         <div class='mainPhoto'>
           <img src='{$hibaMainSrc}' alt='Hiba Main'>
         </div>
-
-        <!-- Gallery thumbnails -->
         <div class='thumbs'>
           {$thumbsHtml}
         </div>
-
       </div>
 
-      <!-- ✅ RIGHT SIDE -->
       <div class='right'>
-
-        <!-- Top right -->
         <div class='card topCard'>
           <div class='topImg'>
             <img src='{$valSrc}' alt='Valentine Image'>
@@ -303,17 +291,15 @@ $html = "
           <div class='answers'>
             {$rows}
             <div class='goalText'>
-              ✨ 2026 Goal ✨
+              ✨ Objectif 2026 ✨
               <span>{$goal2026}</span>
             </div>
           </div>
         </div>
 
-        <!-- Bottom right -->
         <div class='card heartImg'>
           <img src='{$hrtSrc}' alt='Heart Image'>
         </div>
-
       </div>
 
     </div>
@@ -322,9 +308,8 @@ $html = "
 </html>
 ";
 
-
 /**
- * 1) Generate PDF
+ * Generate PDF
  */
 $options = new Options();
 $options->set('isRemoteEnabled', true);
@@ -334,16 +319,22 @@ $pdf->loadHtml($html, 'UTF-8');
 $pdf->setPaper('A4', 'portrait');
 $pdf->render();
 
+/**
+ * Save files with unique name (avoid cache)
+ */
 $giftDir = __DIR__ . '/../assets/gift_images';
-
 @mkdir($giftDir, 0777, true);
 
-/* Save PDF */
-$pdfPath = $giftDir . '/love-profile.pdf';
+$suffix = date('Ymd_His') . '_' . substr(sha1(json_encode($data)), 0, 8);
+
+$pdfName = "love-profile-{$suffix}.pdf";
+$pngName = "love-profile-{$suffix}.png";
+
+$pdfPath = $giftDir . '/' . $pdfName;
 file_put_contents($pdfPath, $pdf->output());
 
-/* Save PNG */
-$pngPath = $giftDir . '/love-profile.png';
+// PNG optional
+$pngPath = $giftDir . '/' . $pngName;
 $pngSaved = false;
 
 try {
@@ -352,14 +343,23 @@ try {
             ->windowSize(794, 1123)
             ->deviceScaleFactor(2)
             ->save($pngPath);
-
         $pngSaved = true;
     }
 } catch (\Throwable $e) {
-    // keep going
+    // ignore
 }
 
-echo "✅ PDF saved: {$pdfPath}\n";
-echo $pngSaved
-    ? "✅ PNG saved: {$pngPath}\n"
-    : "ℹ️ PNG not generated (Browsershot/Node/Chrome not available or failed).\n";
+// optional "latest" copies (if your valentine.html still uses fixed name sometimes)
+@copy($pdfPath, $giftDir . '/love-profile.pdf');
+if ($pngSaved) {
+    @copy($pngPath, $giftDir . '/love-profile.png');
+}
+
+/**
+ * Return JSON for frontend
+ */
+json_out([
+    'success' => true,
+    'pdf' => "assets/gift_images/{$pdfName}",
+    'png' => $pngSaved ? "assets/gift_images/{$pngName}" : "assets/gift_images/love-profile.png",
+]);

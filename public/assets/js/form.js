@@ -196,25 +196,46 @@ async function submit() {
     setLoading(true);
 
     // 1) Save
-    const resSave = await fetch("api/save.php", {
+    const resSave = await fetch("api/save.php?nocache=" + Date.now(), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data),
+      cache: "no-store",
     });
 
     if (!resSave.ok) {
       throw new Error("save.php a échoué: " + resSave.status);
     }
 
-    // 2) Generate PDF (attendre la fin)
-    const resPdf = await fetch("api/generate-pdf.php", { method: "GET" });
+    // 2) Generate PDF (attendre la fin) + récupérer JSON
+    const resPdf = await fetch("api/generate-pdf.php?nocache=" + Date.now(), {
+      method: "GET",
+      cache: "no-store",
+    });
 
     if (!resPdf.ok) {
       throw new Error("generate-pdf.php a échoué: " + resPdf.status);
     }
 
-    // 3) Redirect
-    location.href = "valentine.html";
+    // ✅ si generate-pdf.php retourne JSON (recommandé)
+    const out = await resPdf.json(); // { success:true, pdf:'...', png:'...' }
+
+    if (!out || out.success !== true) {
+      throw new Error(out?.message || "Génération PDF échouée");
+    }
+
+    // ✅ Optionnel: mettre à jour le lien cadeau (si présent sur la page suivante)
+    // Si tu as un lien <a id="giftLink" ...> dans valentine.html,
+    // on peut passer le chemin via querystring :
+    const qs = new URLSearchParams();
+    if (out.png) qs.set("png", out.png);
+    if (out.pdf) qs.set("pdf", out.pdf);
+
+    // ✅ Optionnel: clear storage après génération OK
+    localStorage.removeItem("loveAnswers");
+
+    // 3) Redirect avec les nouveaux fichiers (anti-cache)
+    location.href = "valentine.html?" + qs.toString();
   } catch (err) {
     console.error(err);
     alert("Une erreur est survenue 💔");

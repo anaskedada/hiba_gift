@@ -76,23 +76,16 @@
       75%{ transform: scale(1.12); }
     }
 
-    h1 {
+    h1, h2 {
       font-family: "Playfair Display", serif;
-      font-size: 28px;
       color: #fff;
       margin-bottom: 10px;
       text-shadow: 0 10px 30px rgba(0,0,0,0.25);
       line-height: 1.15;
     }
 
-    h2 {
-      font-family: "Playfair Display", serif;
-      font-size: 20px;
-      color: #fff;
-      margin-bottom: 10px;
-      text-shadow: 0 10px 30px rgba(0,0,0,0.25);
-      line-height: 1.15;
-    }
+    h1 { font-size: 28px; }
+    h2 { font-size: 20px; margin-top: -6px; }
 
     p {
       font-size: 15px;
@@ -243,13 +236,13 @@
 <div class="card" id="card">
   <div class="emoji">💖</div>
 
-  <h1 id="greeting">Salut Hiba… 💕</h1>
-  <h2 id="greeting">Tu veux être ma Saint-Valentin ?</h2>
+  <h1 id="greeting1">Salut Hiba… 💕</h1>
+  <h2 id="greeting2">Tu veux être ma Saint-Valentin ?</h2>
 
   <p id="message"></p>
 
   <div class="buttons" id="btnZone">
-    <!-- Flèches animées vers OUI (positionnées via JS) -->
+    <!-- Flèches animées vers OUI -->
     <div class="arrow-wrap" id="arrowWrap">
       <div class="arrow">➜</div>
       <div class="arrow">➜</div>
@@ -272,12 +265,29 @@
   const yesBtn = document.getElementById("yes");
   const noBtn = document.getElementById("no");
   const giftWrap = document.getElementById("giftWrap");
+  const giftLink = document.getElementById("giftLink");
   const msg = document.getElementById("message");
   const arrowWrap = document.getElementById("arrowWrap");
 
   let noClicks = 0;
 
-  /* Positionner flèches près du bouton Oui */
+  // ✅ Lire png/pdf depuis l'URL pour éviter cache
+  (function applyGiftFromQuery(){
+    const params = new URLSearchParams(location.search);
+    const png = params.get("png");
+    const pdf = params.get("pdf");
+
+    // priorité au png (tu télécharges une image)
+    if (giftLink && png) {
+      giftLink.href = png + "?v=" + Date.now();
+      // optionnel: si tu veux télécharger le PDF à la place, remplace par pdf
+      // if (pdf) giftLink.href = pdf + "?v=" + Date.now();
+    } else {
+      // fallback anti-cache sur le fichier "latest"
+      giftLink.href = "assets/gift_images/love-profile.png?v=" + Date.now();
+    }
+  })();
+
   function positionArrows() {
     const yesRect = yesBtn.getBoundingClientRect();
     const zoneRect = document.getElementById("btnZone").getBoundingClientRect();
@@ -295,48 +305,36 @@
     arrowWrap.style.display = "none";
   }
 
-  /* YES */
   yesBtn.addEventListener("click", () => {
     confetti({ particleCount: 400, spread: 180 });
-
     msg.textContent = "Yesss 😍 Je savais ! 💖";
     giftWrap.style.display = "block";
     hideArrows();
   });
 
-  /* NO scénario */
   noBtn.addEventListener("click", () => {
     noClicks++;
 
     if (noClicks === 1) {
       msg.textContent = "T’es sûre ? 😳";
-    }
-
-    else if (noClicks === 2) {
+    } else if (noClicks === 2) {
       msg.textContent = "Allez… s’il te plaît 😇";
       noBtn.textContent = "S’il te plaît 🙏";
       showArrows();
-    }
-
-    else if (noClicks === 3) {
+    } else if (noClicks === 3) {
       msg.textContent = "Ok…😌";
       yesBtn.classList.add("yes-bigger");
       noBtn.textContent = "Encore 😠";
       showArrows();
-    }
-
-    else if (noClicks >= 4) {
+    } else {
       msg.textContent = "Bon… 😤";
-
-      noBtn.remove();      // supprimer Non
-      hideArrows();        // supprimer flèches aussi
-
-      card.classList.add("center-yes"); // centrer Oui
+      noBtn.remove();
+      hideArrows();
+      card.classList.add("center-yes");
       yesBtn.classList.add("yes-bigger");
     }
   });
 
-  /* Coeurs flottants */
   function createHeart(){
     const heart = document.createElement("div");
     heart.className = "heart";
