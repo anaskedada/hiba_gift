@@ -7,41 +7,43 @@ use Spatie\Browsershot\Browsershot;
 
 $data = json_decode(file_get_contents('../storage/answers.json'), true) ?? [];
 
-function v(array $data, string $key, string $fallback = '—'): string {
-    $val = $data[$key] ?? '';
-    $val = is_string($val) ? trim($val) : '';
-    return $val !== '' ? htmlspecialchars($val, ENT_QUOTES, 'UTF-8') : $fallback;
+function v(array $data, string $key, string $fallback = '—'): string
+{
+  $val = $data[$key] ?? '';
+  $val = is_string($val) ? trim($val) : '';
+  return $val !== '' ? htmlspecialchars($val, ENT_QUOTES, 'UTF-8') : $fallback;
 }
 
-function img_to_data_uri(string $absPath): string {
-    $ext = strtolower(pathinfo($absPath, PATHINFO_EXTENSION));
-    $mime = match ($ext) {
-        'png'  => 'image/png',
-        'webp' => 'image/webp',
-        default => 'image/jpeg',
-    };
-    return 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($absPath));
+function img_to_data_uri(string $absPath): string
+{
+  $ext = strtolower(pathinfo($absPath, PATHINFO_EXTENSION));
+  $mime = match ($ext) {
+    'png'  => 'image/png',
+    'webp' => 'image/webp',
+    default => 'image/jpeg',
+  };
+  return 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($absPath));
 }
 
 /**
  * Answers
  */
 $answers = [
-    ['label' => 'Feel loved when', 'key' => 'feelLoved'],
-    ['label' => 'Love language',   'key' => 'loveLanguage'],
-    ['label' => 'Core value',      'key' => 'coreValue'],
-    ['label' => 'Needs more',      'key' => 'needs'],
-    ['label' => 'Conflict resolution',  'key' => 'conflict'],
-    ['label' => 'Hope in love',      'key' => 'hope'],
+  ['label' => 'Feel loved when', 'key' => 'feelLoved'],
+  ['label' => 'Love language',   'key' => 'loveLanguage'],
+  ['label' => 'Core value',      'key' => 'coreValue'],
+  ['label' => 'Needs more',      'key' => 'needs'],
+  ['label' => 'Conflict resolution',  'key' => 'conflict'],
+  ['label' => 'Hope in love',      'key' => 'hope'],
 
-    // ['label' => 'Hope in love', 'key' => 'hope'],
+  // ['label' => 'Hope in love', 'key' => 'hope'],
 ];
 
 $rows = '';
 foreach ($answers as $r) {
-    $label = htmlspecialchars($r['label'], ENT_QUOTES, 'UTF-8');
-    $val   = v($data, $r['key'], '—');
-    $rows .= "
+  $label = htmlspecialchars($r['label'], ENT_QUOTES, 'UTF-8');
+  $val   = v($data, $r['key'], '—');
+  $rows .= "
       <div class='row'>
         <div class='label'>{$label}</div>
         <div class='val'>{$val}</div>
@@ -215,21 +217,21 @@ $pngPath = '../storage/pdf/love-profile.png';
 $pngSaved = false;
 
 try {
-    if (class_exists(Browsershot::class)) {
-        Browsershot::html($html)
-        
-            ->windowSize(794, 1123)
-            ->deviceScaleFactor(2)     // higher quality
-            ->waitUntilNetworkIdle()
-            ->save($pngPath);
+  if (class_exists(Browsershot::class)) {
+    Browsershot::html($html)
+      ->setOption('executablePath', '/usr/bin/chromium')
+      ->noSandbox()
+      ->windowSize(794, 1123)
+      ->deviceScaleFactor(2)
+      ->save($pngPath);
 
-        $pngSaved = true;
-    }
+    $pngSaved = true;
+  }
 } catch (\Throwable $e) {
-    // keep going, PDF is saved
+  // keep going, PDF is saved
 }
 
 echo "✅ PDF saved: {$pdfPath}\n";
 echo $pngSaved
-    ? "✅ PNG saved: {$pngPath}\n"
-    : "ℹ️ PNG not generated (Browsershot/Node/Chrome not available or failed).\n";
+  ? "✅ PNG saved: {$pngPath}\n"
+  : "ℹ️ PNG not generated (Browsershot/Node/Chrome not available or failed).\n";
