@@ -235,3 +235,35 @@ label {
     font-size: 15px;
   }
 }
+
+.step textarea{
+  width: 100%;
+  min-height: 120px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  border: 1px solid #ddd;
+  font-size: 15px;
+  outline: none;
+  background: rgba(255,255,255,0.95);
+  transition: border 0.25s ease, box-shadow 0.25s ease;
+  resize: none;
+  font-family: inherit;
+}
+
+.step textarea::placeholder{
+  color: #aaa;
+}
+
+.step textarea:focus{
+  border-color: #ff4d6d;
+  box-shadow: 0 0 0 3px rgba(255, 77, 109, 0.18);
+}
+
+@media (max-width: 480px) {
+  .step input,
+  .step select,
+  .step textarea {
+    font-size: 14px;
+  }
+}
+

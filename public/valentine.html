@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>💖 Your Valentine 💖</title>
+  <title>💖 Ta Saint-Valentin 💖</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <!-- Fonts -->
@@ -80,24 +80,25 @@
       font-family: "Playfair Display", serif;
       font-size: 28px;
       color: #fff;
-      margin-bottom: 14px;
+      margin-bottom: 10px;
       text-shadow: 0 10px 30px rgba(0,0,0,0.25);
       line-height: 1.15;
     }
 
     p {
       font-size: 15px;
-      margin: 0 auto 18px;
+      margin: 0 auto 16px;
       color: #fff;
       line-height: 1.55;
       text-shadow: 0 10px 25px rgba(0,0,0,0.25);
       max-width: 380px;
+      min-height: 24px;
     }
 
     .buttons {
       position: relative;
       height: 84px;
-      margin-top: 18px;
+      margin-top: 14px;
     }
 
     button {
@@ -108,9 +109,10 @@
       font-size: 16px;
       font-weight: 500;
       cursor: pointer;
-      transition: all 0.25s ease;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
       box-shadow: 0 10px 25px rgba(0,0,0,0.15);
       user-select: none;
+      white-space: nowrap;
     }
 
     button:active { transform: scale(0.94); }
@@ -121,6 +123,7 @@
       background: linear-gradient(135deg,#ff4d6d,#ff758f);
       color:#fff;
       box-shadow: 0 15px 35px rgba(255,77,109,0.55);
+      transform-origin: center;
     }
 
     #yes:hover {
@@ -135,15 +138,40 @@
       color:#777;
     }
 
+    /* Flèches animées vers le bouton Oui */
+    .arrow-wrap {
+      display: none;
+      position: absolute;
+      gap: 6px;
+      z-index: 5;
+      align-items: center;
+      pointer-events: none;
+    }
+
+    .arrow {
+      font-size: 22px;
+      color: rgba(255,255,255,0.95);
+      text-shadow: 0 10px 25px rgba(0,0,0,0.25);
+      animation: bounceArrow 0.8s infinite;
+      opacity: 0.85;
+    }
+
+    .arrow:nth-child(2) { animation-delay: 0.15s; }
+    .arrow:nth-child(3) { animation-delay: 0.3s; }
+
+    @keyframes bounceArrow {
+      0%   { transform: translateX(0); opacity: 0.4; }
+      50%  { transform: translateX(10px); opacity: 1; }
+      100% { transform: translateX(0); opacity: 0.4; }
+    }
+
     /* Gift button container */
     .gift-wrap{
       margin-top: 18px;
-      display:none; /* hidden until YES */
+      display:none;
     }
 
-    .gift-wrap a{
-      text-decoration:none;
-    }
+    .gift-wrap a{ text-decoration:none; }
 
     .gift-btn{
       width:100%;
@@ -157,6 +185,7 @@
       border-radius:40px;
       cursor:pointer;
       box-shadow:0 15px 35px rgba(255,180,70,0.5);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
     }
 
     .gift-btn:hover{
@@ -164,6 +193,7 @@
       box-shadow:0 20px 45px rgba(255,180,70,0.65);
     }
 
+    /* Coeurs flottants */
     .heart {
       position: absolute;
       bottom:-20px;
@@ -175,6 +205,18 @@
     @keyframes floatUp {
       from { transform: translateY(0) scale(1); opacity:1; }
       to { transform: translateY(-120vh) scale(1.8); opacity:0; }
+    }
+
+    /* Etats spéciaux */
+    .yes-bigger {
+      transform: scale(1.18);
+      box-shadow: 0 22px 55px rgba(255,77,109,0.8) !important;
+    }
+
+    .center-yes #yes {
+      left: 50% !important;
+      top: 10px !important;
+      transform: translateX(-50%) scale(1.18);
     }
 
     @media(max-width:480px){
@@ -189,69 +231,102 @@
 
 <body>
 
-<div class="card">
+<div class="card" id="card">
   <div class="emoji">💖</div>
 
-  <!-- ✅ Cute question -->
-  <h1 id="greeting">Hi Hiba… 💕<br>Will you be my Valentine?</h1>
+  <h1 id="greeting">Salut Hiba… 💕<br>Tu veux être ma Saint-Valentin ?</h1>
 
-  <!-- <p id="message">Loading your special Valentine’s message…</p> -->
+  <p id="message"></p>
 
-  <div class="buttons">
-    <button id="yes">Yes 💖</button>
-    <button id="no">No 🙈</button>
+  <div class="buttons" id="btnZone">
+    <!-- Flèches animées vers OUI (positionnées via JS) -->
+    <div class="arrow-wrap" id="arrowWrap">
+      <div class="arrow">➜</div>
+      <div class="arrow">➜</div>
+      <div class="arrow">➜</div>
+    </div>
+
+    <button id="yes">Oui 💖</button>
+    <button id="no">Non 🙈</button>
   </div>
 
-  <!-- ✅ Gift download (hidden, appears after YES) -->
   <div class="gift-wrap" id="giftWrap">
-    <!-- Update href if your png path differs -->
-    <a id="giftLink" href="storage/pdf/love-profile.png" download>
-      <button class="gift-btn">🎁 Download Your Gift</button>
+    <a id="giftLink" href="assets/gift_images/love-profile.png" download>
+      <button class="gift-btn">🎁 Télécharger ton cadeau</button>
     </a>
   </div>
 </div>
 
 <script>
+  const card = document.getElementById("card");
   const yesBtn = document.getElementById("yes");
   const noBtn = document.getElementById("no");
   const giftWrap = document.getElementById("giftWrap");
+  const msg = document.getElementById("message");
+  const arrowWrap = document.getElementById("arrowWrap");
 
-  // ✅ YES click: big celebration + show gift download
+  let noClicks = 0;
+
+  /* Positionner flèches près du bouton Oui */
+  function positionArrows() {
+    const yesRect = yesBtn.getBoundingClientRect();
+    const zoneRect = document.getElementById("btnZone").getBoundingClientRect();
+
+    arrowWrap.style.left = (yesRect.left - zoneRect.left - 50) + "px";
+    arrowWrap.style.top  = (yesRect.top - zoneRect.top + yesRect.height/2 - 12) + "px";
+  }
+
+  function showArrows() {
+    positionArrows();
+    arrowWrap.style.display = "flex";
+  }
+
+  function hideArrows() {
+    arrowWrap.style.display = "none";
+  }
+
+  /* YES */
   yesBtn.addEventListener("click", () => {
-    // Big confetti burst
-    confetti({ particleCount: 450, spread: 180, origin: { y: 0.6 } });
-    setTimeout(() => confetti({ particleCount: 250, spread: 120, origin: { y: 0.25 } }), 180);
-    setTimeout(() => confetti({ particleCount: 220, spread: 160, origin: { y: 0.75 } }), 360);
+    confetti({ particleCount: 400, spread: 180 });
 
-    // Show gift button
+    msg.textContent = "Yesss 😍 Je savais ! 💖";
     giftWrap.style.display = "block";
+    hideArrows();
   });
 
-  // ✅ NO button moves but stays inside the card view
-  function moveNoButton() {
-  const container = document.querySelector(".buttons");
+  /* NO scénario */
+  noBtn.addEventListener("click", () => {
+    noClicks++;
 
-  const containerRect = container.getBoundingClientRect();
-  const btnRect = noBtn.getBoundingClientRect();
+    if (noClicks === 1) {
+      msg.textContent = "T’es sûre ? 😳";
+    }
 
-  // Maximum X/Y inside container
-  const maxX = containerRect.width - btnRect.width;
-  const maxY = containerRect.height - btnRect.height;
+    else if (noClicks === 2) {
+      msg.textContent = "Allez… s’il te plaît 😇";
+      noBtn.textContent = "S’il te plaît 🙏";
+      showArrows();
+    }
 
-  // Random position
-  const randX = Math.random() * maxX;
-  const randY = Math.random() * maxY;
+    else if (noClicks === 3) {
+      msg.textContent = "Ok…😌";
+      yesBtn.classList.add("yes-bigger");
+      noBtn.textContent = "Encore 😠";
+      showArrows();
+    }
 
-  noBtn.style.left = randX + "px";
-  noBtn.style.top  = randY + "px";
-}
+    else if (noClicks >= 4) {
+      msg.textContent = "Bon… 😤";
 
-/* 😈 Impossible mode */
-noBtn.addEventListener("mouseenter", moveNoButton);
-noBtn.addEventListener("mousemove", moveNoButton);
-noBtn.addEventListener("touchstart", moveNoButton);
+      noBtn.remove();      // supprimer Non
+      hideArrows();        // supprimer flèches aussi
 
-  // Floating hearts
+      card.classList.add("center-yes"); // centrer Oui
+      yesBtn.classList.add("yes-bigger");
+    }
+  });
+
+  /* Coeurs flottants */
   function createHeart(){
     const heart = document.createElement("div");
     heart.className = "heart";
@@ -259,12 +334,15 @@ noBtn.addEventListener("touchstart", moveNoButton);
     heart.style.left = Math.random()*100 + "vw";
     heart.style.fontSize = (Math.random()*22 + 14) + "px";
     heart.style.animationDuration = (Math.random()*3 + 4) + "s";
-    heart.style.opacity = (Math.random()*0.5 + 0.4);
 
     document.body.appendChild(heart);
     setTimeout(()=>heart.remove(),8000);
   }
-  setInterval(createHeart,380);
+  setInterval(createHeart,400);
+
+  window.addEventListener("resize", () => {
+    if (arrowWrap.style.display === "flex") positionArrows();
+  });
 </script>
 
 </body>

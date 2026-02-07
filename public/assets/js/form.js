@@ -5,11 +5,11 @@ const clearBtn = document.getElementById("clear");
 
 let current = 0;
 
-// ✅ Data object for API submit
+// ✅ Objet data pour envoyer à l’API
 let data = {};
 
 // -----------------------------
-// Progress
+// Progression
 // -----------------------------
 function updateProgress() {
   progressEl.textContent = `${current + 1} / ${steps.length}`;
@@ -22,6 +22,7 @@ function getStepElements(step) {
   return {
     select: step.querySelector("select[data-key]"),
     otherInput: step.querySelector(".other-input"),
+    textarea: step.querySelector("textarea[data-key]"),
   };
 }
 
@@ -35,38 +36,43 @@ function showStep(index) {
   const { select, otherInput } = getStepElements(steps[current]);
 
   if (select && otherInput) {
-    if (select.value === "other") {
-      otherInput.style.display = "block";
-    } else {
-      otherInput.style.display = "none";
-    }
+    otherInput.style.display = select.value === "other" ? "block" : "none";
   }
 
   nextBtn.textContent =
-    current === steps.length - 1 ? "Finish ✨" : "Next ✨";
+    current === steps.length - 1 ? "Terminer ✨" : "Suivant ✨";
 }
 
 // -----------------------------
-// Save Answer (local + data)
+// Sauvegarde Réponse (local + data)
 // -----------------------------
 function saveAnswer(key, value) {
-  // Save to localStorage
+  // Sauvegarde localStorage
   const answers = JSON.parse(localStorage.getItem("loveAnswers") || "{}");
   answers[key] = value;
   localStorage.setItem("loveAnswers", JSON.stringify(answers));
 
-  // Save to API payload object
+  // Sauvegarde payload API
   data[key] = value;
 }
 
 // -----------------------------
-// Load saved answers
+// Charger les réponses enregistrées
 // -----------------------------
 function loadAnswers() {
   data = JSON.parse(localStorage.getItem("loveAnswers") || "{}");
 
   steps.forEach(step => {
-    const { select, otherInput } = getStepElements(step);
+    const { select, otherInput, textarea } = getStepElements(step);
+
+    // textarea
+    if (textarea) {
+      const key = textarea.dataset.key;
+      if (data[key]) textarea.value = data[key];
+      return;
+    }
+
+    // select
     if (!select) return;
 
     const key = select.dataset.key;
@@ -82,17 +88,19 @@ function loadAnswers() {
 
     if (match && match !== "other") {
       select.value = saved;
-      otherInput.style.display = "none";
+      if (otherInput) otherInput.style.display = "none";
     } else {
       select.value = "other";
-      otherInput.value = saved;
-      otherInput.style.display = "block";
+      if (otherInput) {
+        otherInput.value = saved;
+        otherInput.style.display = "block";
+      }
     }
   });
 }
 
 // -----------------------------
-// Select change event
+// Événement changement select
 // -----------------------------
 steps.forEach(step => {
   const { select, otherInput } = getStepElements(step);
@@ -110,32 +118,46 @@ steps.forEach(step => {
 });
 
 // -----------------------------
-// Next Button Click
+// Click bouton Suivant
 // -----------------------------
 nextBtn.addEventListener("click", () => {
   const step = steps[current];
-  const { select, otherInput } = getStepElements(step);
+  const { select, otherInput, textarea } = getStepElements(step);
 
-  if (!select) return;
+  // ✅ Étape textarea obligatoire
+  if (textarea) {
+    const value = textarea.value.trim();
 
-  let value = select.value;
-
-  if (!value) {
-    alert("Please choose an answer 💕");
-    return;
-  }
-
-  if (value === "other") {
-    value = otherInput.value.trim();
     if (!value) {
-      alert("Write your answer 💕");
+      alert("Merci d’écrire une réponse 💕");
       return;
     }
+
+    saveAnswer(textarea.dataset.key, value);
   }
 
-  const key = select.dataset.key;
-  saveAnswer(key, value);
+  // ✅ Étape select
+  if (select) {
+    let value = select.value;
 
+    if (!value) {
+      alert("Merci de choisir une réponse 💕");
+      return;
+    }
+
+    if (value === "other") {
+      value = otherInput.value.trim();
+
+      if (!value) {
+        alert("Merci d’écrire ta réponse 💕");
+        return;
+      }
+    }
+
+    saveAnswer(select.dataset.key, value);
+  }
+
+  // Next step
   if (current < steps.length - 1) {
     showStep(current + 1);
   } else {
@@ -144,7 +166,7 @@ nextBtn.addEventListener("click", () => {
 });
 
 // -----------------------------
-// Clear Button
+// Bouton Effacer
 // -----------------------------
 clearBtn.addEventListener("click", () => {
   localStorage.removeItem("loveAnswers");
@@ -153,7 +175,7 @@ clearBtn.addEventListener("click", () => {
 });
 
 // -----------------------------
-// Submit to API
+// Envoi vers API
 // -----------------------------
 function submit() {
   fetch("api/save.php", {
@@ -162,13 +184,12 @@ function submit() {
     body: JSON.stringify(data),
   })
     .then(() => fetch("api/generate-pdf.php"))
-    // .then(() => fetch("api/send-mail.php"))
     .then(() => {
       location.href = "valentine.html";
     })
     .catch(err => {
       console.error(err);
-      alert("Something went wrong 💔");
+      alert("Une erreur est survenue 💔");
     });
 }
 
