@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>A Few Honest Questions</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="assets/css/app.css">
+</head>
+<body>
+
+  <div class="card">
+    <h2 id="title">A few honest questions</h2>
+    <p class="subtitle">Choose a quick answer — or write your own.</p>
+
+    <!-- Step 1 -->
+    <div class="step active">
+      <label>What makes you feel most loved?</label>
+
+      <select data-key="feelLoved">
+        <option value="">Choose one…</option>
+        <option>When someone listens deeply</option>
+        <option>Small thoughtful gestures</option>
+        <option>Quality time together</option>
+        <option>Words of affection</option>
+        <option value="other">Other…</option>
+      </select>
+
+      <input class="other-input" type="text" placeholder="Write your own answer…">
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step">
+      <label>Your love language?</label>
+
+      <select data-key="loveLanguage">
+        <option value="">Choose one…</option>
+        <option>Quality Time</option>
+        <option>Acts of Service</option>
+        <option>Words of Affirmation</option>
+        <option>Physical Touch</option>
+        <option>Receiving Gifts</option>
+        <option value="other">Other…</option>
+      </select>
+
+      <input class="other-input" type="text" placeholder="Write your own love language…">
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step">
+      <label>What do you value most in a relationship?</label>
+
+      <select data-key="coreValue">
+        <option value="">Choose one…</option>
+        <option>Trust</option>
+        <option>Honesty</option>
+        <option>Kindness</option>
+        <option>Communication</option>
+        <option>Loyalty</option>
+        <option value="other">Other…</option>
+      </select>
+
+      <input class="other-input" type="text" placeholder="Write your own value…">
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step">
+      <label>What do you need more of in love?</label>
+
+      <select data-key="needs">
+        <option value="">Choose one…</option>
+        <option>Reassurance</option>
+        <option>More time together</option>
+        <option>Better communication</option>
+        <option>Emotional support</option>
+        <option>More romance</option>
+        <option value="other">Other…</option>
+      </select>
+
+      <input class="other-input" type="text" placeholder="Write what you need…">
+    </div>
+
+    <!-- Step 5 -->
+    <div class="step">
+      <label>How do you prefer to resolve conflicts?</label>
+
+      <select data-key="conflict">
+        <option value="">Choose one…</option>
+        <option>Talk calmly right away</option>
+        <option>Take time then discuss</option>
+        <option>Need reassurance first</option>
+        <option>Prefer gentle conversations</option>
+        <option>Avoid fights, seek peace</option>
+        <option value="other">Other…</option>
+      </select>
+
+      <input class="other-input" type="text" placeholder="Your own way…">
+    </div>
+
+    <!-- Step 6 -->
+    <div class="step">
+      <label>What are you hoping for in love right now?</label>
+
+      <select data-key="hope">
+        <option value="">Choose one…</option>
+        <option>A peaceful relationship</option>
+        <option>Deep connection</option>
+        <option>Something lasting</option>
+        <option>More romance and joy</option>
+        <option>Healing and comfort</option>
+        <option value="other">Other…</option>
+      </select>
+
+      <input class="other-input" type="text" placeholder="Write your hope…">
+    </div>
+
+    <div class="actions">
+      <button id="next">Next</button>
+    </div>
+
+    <div class="mini">
+      <span id="progress">1 / 6</span>
+      <button id="clear" type="button">Clear</button>
+    </div>
+  </div>
+
+  <script src="assets/js/form.js"></script>
+</body>
+</html>

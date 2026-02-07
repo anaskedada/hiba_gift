@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Valentine Layout Test</title>
+
+  <style>
+    /* Page look (browser test) */
+    body{
+      margin:0;
+      font-family: Arial, sans-serif;
+      background:#f6f6f6;
+      display:flex;
+      justify-content:center;
+      padding:24px;
+    }
+
+    /* A4-ish canvas */
+    .page{
+      width: 794px;      /* ~A4 @ 96dpi */
+      height: 1123px;    /* ~A4 @ 96dpi */
+      background:#ffffff;
+      border-radius:18px;
+      box-shadow:0 10px 30px rgba(0,0,0,.15);
+      overflow:hidden;
+      position:relative;
+      padding:18px;
+      box-sizing:border-box;
+    }
+
+    /* Main 2 columns: left letter, right side */
+    .grid{
+      display:grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap:18px;
+      height:100%;
+    }
+
+    .card{
+      border-radius:18px;
+      overflow:hidden;
+      background: rgba(255,255,255,0.92);
+      border: 1px solid rgba(0,0,0,0.06);
+      box-shadow:0 10px 20px rgba(0,0,0,.06);
+    }
+
+    /* Left big letter card */
+    .letter{
+      padding:18px;
+      box-sizing:border-box;
+      height:100%;
+      background: rgba(255,255,255,0.86);
+    }
+
+    .letter h2{
+      margin:0 0 12px 0;
+      font-size:18px;
+      font-weight:700;
+      color:#b51d4a;
+    }
+
+    .letter p{
+      margin:0;
+      line-height:1.55;
+      color:#333;
+      font-size:14px;
+      white-space:pre-wrap;
+    }
+
+    /* Right column with top + bottom cards */
+    .right{
+      display:grid;
+      grid-template-rows: 1fr 0.9fr;
+      gap:18px;
+      height:100%;
+    }
+
+    /* Top-right card split: image left, answers right */
+    .topCard{
+      display:grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      height:100%;
+    }
+
+    .topImg{
+      position:relative;
+      background:#eee;
+    }
+    .topImg img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .answers{
+      padding:14px;
+      box-sizing:border-box;
+      background: rgba(255,255,255,0.86);
+    }
+
+    .row{
+      padding:10px 10px;
+      border-radius:14px;
+      background: rgba(255,255,255,0.70);
+      border: 1px solid rgba(0,0,0,0.05);
+      margin-bottom:10px;
+    }
+    .label{
+      font-size:12px;
+      font-weight:700;
+      color:#b51d4a;
+      margin-bottom:6px;
+    }
+    .val{
+      font-size:13px;
+      color:#333;
+      line-height:1.35;
+    }
+
+    /* Bottom-right heart image card */
+    .heartImg{
+      position:relative;
+      background:#eee;
+    }
+    .heartImg img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    /* Small note (optional) */
+    .hint{
+      position:absolute;
+      bottom:10px;
+      left:12px;
+      right:12px;
+      font-size:11px;
+      color:#555;
+      background: rgba(255,255,255,0.7);
+      border: 1px solid rgba(0,0,0,0.06);
+      padding:8px 10px;
+      border-radius:12px;
+    }
+
+    .letterImg{
+  position: relative;
+  height: 100%;
+  background: #eee;
+}
+
+.letterImg img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <div class="grid">
+
+      <!-- LEFT: your letter -->
+      <div class="card letterImg">
+  <img src="hiba.jpg" alt="Letter Image">
+</div>
+
+      <!-- RIGHT -->
+      <div class="right">
+
+        <!-- TOP RIGHT: valentine image + answers -->
+        <div class="card topCard">
+
+          <div class="topImg">
+            <!-- Replace src with your valentine image -->
+            <img src="valentine-bg.jpg" alt="Valentine Image">
+          </div>
+
+          <div class="answers">
+            <div class="row">
+              <div class="label">Feel loved when</div>
+              <div class="val">When someone listens deeply and shows care.</div>
+            </div>
+            <div class="row">
+              <div class="label">Love language</div>
+              <div class="val">Quality time + small gestures.</div>
+            </div>
+            <div class="row">
+              <div class="label">Core value</div>
+              <div class="val">Trust and kindness.</div>
+            </div>
+            <div class="row">
+              <div class="label">Needs more</div>
+              <div class="val">More communication and reassurance.</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- BOTTOM RIGHT: heart image -->
+        <div class="card heartImg">
+          <!-- Replace src with your heart image -->
+          <img src="hearth.jpg" alt="Heart Image">
+        </div>
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>
