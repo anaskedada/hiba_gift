@@ -3,10 +3,27 @@ const nextBtn = document.getElementById("next");
 const progressEl = document.getElementById("progress");
 const clearBtn = document.getElementById("clear");
 
+// ✅ Loader overlay (doit exister dans le HTML)
+const loadingOverlay = document.getElementById("loadingOverlay");
+
 let current = 0;
 
 // ✅ Objet data pour envoyer à l’API
 let data = {};
+
+// -----------------------------
+// Loader
+// -----------------------------
+function setLoading(isLoading) {
+  if (!loadingOverlay) return;
+
+  loadingOverlay.classList.toggle("active", isLoading);
+  loadingOverlay.setAttribute("aria-hidden", String(!isLoading));
+
+  // Empêche double clic
+  nextBtn.disabled = isLoading;
+  clearBtn.disabled = isLoading;
+}
 
 // -----------------------------
 // Progression
@@ -47,12 +64,10 @@ function showStep(index) {
 // Sauvegarde Réponse (local + data)
 // -----------------------------
 function saveAnswer(key, value) {
-  // Sauvegarde localStorage
   const answers = JSON.parse(localStorage.getItem("loveAnswers") || "{}");
   answers[key] = value;
   localStorage.setItem("loveAnswers", JSON.stringify(answers));
 
-  // Sauvegarde payload API
   data[key] = value;
 }
 
@@ -77,7 +92,6 @@ function loadAnswers() {
 
     const key = select.dataset.key;
     const saved = data[key];
-
     if (!saved) return;
 
     const options = Array.from(select.options).map(
@@ -118,7 +132,7 @@ steps.forEach(step => {
 });
 
 // -----------------------------
-// Click bouton Suivant
+// Click bouton Suivant / Terminer
 // -----------------------------
 nextBtn.addEventListener("click", () => {
   const step = steps[current];
@@ -161,7 +175,7 @@ nextBtn.addEventListener("click", () => {
   if (current < steps.length - 1) {
     showStep(current + 1);
   } else {
-    submit();
+    submit(); // Terminer
   }
 });
 
@@ -175,22 +189,37 @@ clearBtn.addEventListener("click", () => {
 });
 
 // -----------------------------
-// Envoi vers API
+// Envoi vers API (avec loader)
 // -----------------------------
-function submit() {
-  fetch("api/save.php", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(data),
-  })
-    .then(() => fetch("api/generate-pdf.php"))
-    .then(() => {
-      location.href = "valentine.html";
-    })
-    .catch(err => {
-      console.error(err);
-      alert("Une erreur est survenue 💔");
+async function submit() {
+  try {
+    setLoading(true);
+
+    // 1) Save
+    const resSave = await fetch("api/save.php", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
     });
+
+    if (!resSave.ok) {
+      throw new Error("save.php a échoué: " + resSave.status);
+    }
+
+    // 2) Generate PDF (attendre la fin)
+    const resPdf = await fetch("api/generate-pdf.php", { method: "GET" });
+
+    if (!resPdf.ok) {
+      throw new Error("generate-pdf.php a échoué: " + resPdf.status);
+    }
+
+    // 3) Redirect
+    location.href = "valentine.html";
+  } catch (err) {
+    console.error(err);
+    alert("Une erreur est survenue 💔");
+    setLoading(false);
+  }
 }
 
 // -----------------------------
